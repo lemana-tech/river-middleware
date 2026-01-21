@@ -15,7 +15,7 @@ This middleware enables:
 - Customizable UI path prefix
 - Dev and LiveFS modes support
 
-### Basic Setup
+### Basic setup
 
 ```go
 import (
@@ -54,7 +54,7 @@ func main() {
 }
 ```
 
-### Configuration Options
+### Configuration options
 
 | Option      | Type           | Description                                     |
 | ----------- | -------------- | ----------------------------------------------- |
