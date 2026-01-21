@@ -12,7 +12,7 @@ This middleware enables:
 
 - Real-time job queue monitoring and management
 - Seamless integration with existing Go HTTP servers
-- Customizable UI path prefix
+- Customizable UI base path
 - Dev and LiveFS modes support
 
 ### Basic setup
@@ -42,7 +42,7 @@ func main() {
         DevMode:     false,
         LiveFS:      false,
         Logger:      slog.Default(),
-        Prefix:      "/riverui",
+        BaseURL:      "/riverui",
     })
     if err != nil {
         slog.Error("failed to init riverui middleware", "err", err)
@@ -56,13 +56,13 @@ func main() {
 
 ### Configuration options
 
-| Option      | Type           | Description                                     |
-| ----------- | -------------- | ----------------------------------------------- |
-| RiverClient | \*river.Client | River job queue client (required)               |
-| DevMode     | bool           | Enable development mode                         |
-| LiveFS      | bool           | Use live filesystem for frontend assets         |
-| Logger      | \*slog.Logger  | Custom logger instance                          |
-| Prefix      | string         | URL path prefix for River UI (e.g., `/riverui`) |
+| Option      | Type           | Description                                        |
+| ----------- | -------------- | -------------------------------------------------- |
+| RiverClient | \*river.Client | River job queue client (required)                  |
+| DevMode     | bool           | Enable development mode                            |
+| LiveFS      | bool           | Use live filesystem for frontend assets            |
+| Logger      | \*slog.Logger  | Custom logger instance                             |
+| BaseURL     | string         | Base URL path for reverse proxy (e.g., `/riverui`) |
 
 ### Access
 

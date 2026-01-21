@@ -14,8 +14,8 @@ import (
 
 // Middleware wraps River UI handler into standard Go HTTP middleware
 type Middleware struct {
+	baseURL        string
 	riveruiHandler http.Handler
-	prefix         string
 }
 
 // Option contains options for creating River UI middleware
@@ -32,8 +32,8 @@ type Options struct {
 	// Logger is the logger to use logging errors within the handler
 	Logger *slog.Logger
 
-	// Prefix is the path prefix to use for the API and UI HTTP requests
-	Prefix string
+	// BaseURL is the path for reverse proxy (e.g. "/riverui")
+	BaseURL string
 }
 
 // NewMiddleware makes River UI middleware with given options
@@ -42,14 +42,14 @@ func NewMiddleware(ctx context.Context, opts Options) (*Middleware, error) {
 		opts.Logger = slog.Default()
 	}
 
-	prefix := riverui.NormalizePathPrefix(opts.Prefix)
+	baseURL := riverui.NormalizePathPrefix(opts.BaseURL)
 
 	handler, err := riverui.NewHandler(&riverui.HandlerOpts{
 		DevMode:   opts.DevMode,
 		Endpoints: riverui.NewEndpoints(opts.RiverClient, nil),
 		LiveFS:    opts.LiveFS,
 		Logger:    opts.Logger,
-		Prefix:    prefix,
+		Prefix:    baseURL,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to init riverui handler, %w", err)
@@ -60,15 +60,15 @@ func NewMiddleware(ctx context.Context, opts Options) (*Middleware, error) {
 	}
 
 	return &Middleware{
+		baseURL:        baseURL,
 		riveruiHandler: handler,
-		prefix:         prefix,
 	}, nil
 }
 
-// RiverUI middleware serves River UI endpoints on given prefix
+// RiverUI middleware serves River UI endpoints on matching paths
 func (m *Middleware) RiverUI(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, m.prefix) {
+		if strings.HasSuffix(strings.ToLower(r.URL.Path), m.baseURL) {
 			m.riveruiHandler.ServeHTTP(w, r)
 			return
 		}
