@@ -27,8 +27,7 @@ import (
     "github.com/go-pkgz/routegroup"
 	"github.com/riverqueue/river"
     "github.com/riverqueue/river/riverdriver/riverpgxv5"
-
-	"github.com/lemana-tech/river-middleware"
+	"github.com/lemana-tech/river-middleware/riverui"
 )
 
 func main() {

@@ -21,7 +21,7 @@ type Middleware struct {
 // Option contains options for creating River UI middleware
 type Options struct {
 	// RiverClient is provided to initialize ui endpoints
-	RiverClient *river.Client[*pgx.Tx]
+	RiverClient *river.Client[pgx.Tx]
 
 	// DevMode is whether the server is running in development mode
 	DevMode bool
