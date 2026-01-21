@@ -38,11 +38,11 @@ func main() {
     }
 
     mw, err := riverui.NewMiddleware(context.Background(), riverui.Options{
-        RiverClient: riverClient,
-        DevMode:     false,
-        LiveFS:      false,
-        Logger:      slog.Default(),
-        BaseURL:      "/riverui",
+        RiverClient:    riverClient,
+        DevMode:        false,
+        LiveFS:         false,
+        Logger:         slog.Default(),
+        BaseURL:        "/riverui",
     })
     if err != nil {
         slog.Error("failed to init riverui middleware", "err", err)
