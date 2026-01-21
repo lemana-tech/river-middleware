@@ -26,12 +26,13 @@ import (
 	"github.com/jackc/pgx/v5"
     "github.com/go-pkgz/routegroup"
 	"github.com/riverqueue/river"
+    "github.com/riverqueue/river/riverdriver/riverpgxv5"
 
 	"github.com/lemana-tech/river-middleware"
 )
 
 func main() {
-    riverClient, err := river.NewClient(riverDriver, nil)
+    riverClient, err := river.NewClient(riverpgxv5.New(pgPool), nil)
     if err != nil {
         slog.Error("failed to init river client", "err", err)
     }
