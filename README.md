@@ -18,11 +18,11 @@ import (
 	"log/slog"
     "net/http"
 
-	"github.com/jackc/pgx/v5"
     "github.com/go-pkgz/routegroup"
+	"github.com/jackc/pgx/v5"
+    "github.com/lemana-tech/river-middleware/riverui"
 	"github.com/riverqueue/river"
     "github.com/riverqueue/river/riverdriver/riverpgxv5"
-	"github.com/lemana-tech/river-middleware/riverui"
 )
 
 func main() {
