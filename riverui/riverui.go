@@ -23,6 +23,10 @@ type Options struct {
 	// RiverClient is provided to initialize ui endpoints
 	RiverClient *river.Client[pgx.Tx]
 
+	// EndpointsTx is an optional transaction to wrap all database operations for api endpoints.
+	// It's mainly used for testing.
+	EndpointsTx *pgx.Tx
+
 	// DevMode is whether the server is running in development mode
 	DevMode bool
 
@@ -45,11 +49,13 @@ func NewMiddleware(ctx context.Context, opts Options) (*Middleware, error) {
 	baseURL := riverui.NormalizePathPrefix(opts.BaseURL)
 
 	handler, err := riverui.NewHandler(&riverui.HandlerOpts{
-		DevMode:   opts.DevMode,
-		Endpoints: riverui.NewEndpoints(opts.RiverClient, nil),
-		LiveFS:    opts.LiveFS,
-		Logger:    opts.Logger,
-		Prefix:    baseURL,
+		DevMode: opts.DevMode,
+		Endpoints: riverui.NewEndpoints(opts.RiverClient, &riverui.EndpointsOpts[pgx.Tx]{
+			Tx: opts.EndpointsTx,
+		}),
+		LiveFS: opts.LiveFS,
+		Logger: opts.Logger,
+		Prefix: baseURL,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to init riverui handler, %w", err)

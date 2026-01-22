@@ -10,6 +10,7 @@ import (
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
 	"github.com/riverqueue/river/rivermigrate"
+	"github.com/riverqueue/river/rivershared/riversharedtest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -29,8 +30,10 @@ func TestRiverUI_Middleware_HealthCheck(t *testing.T) {
 
 	opts := Options{
 		RiverClient: rc,
+		EndpointsTx:          &tx,
 		DevMode:     true,
 		LiveFS:      false,
+		Logger:      riversharedtest.Logger(t),
 	}
 	mw, err := NewMiddleware(t.Context(), opts)
 	require.NoError(t, err)
@@ -50,7 +53,7 @@ func TestRiverUI_Middleware_HealthCheck(t *testing.T) {
 	handler.ServeHTTP(recorder, req)
 	t.Logf("Response body: %s", recorder.Body.String())
 
-	assert.Equal(t, http.StatusOK, recorder.Code)
+	assert.Equal(t, http.StatusOK, recorder.Result().StatusCode)
 	assert.False(t, nextCalled)
 	assert.NotEmpty(t, recorder.Body.String())
 }
@@ -67,9 +70,10 @@ func TestRiverUI_Middleware_NonRiverUIPath(t *testing.T) {
 
 	opts := Options{
 		RiverClient: rc,
+		EndpointsTx:          &tx,
 		DevMode:     true,
 		LiveFS:      false,
-		BaseURL:     "/riverui",
+		Logger:      riversharedtest.Logger(t),
 	}
 	mw, err := NewMiddleware(t.Context(), opts)
 	require.NoError(t, err)
@@ -85,16 +89,18 @@ func TestRiverUI_Middleware_NonRiverUIPath(t *testing.T) {
 	handler := mw.RiverUI(next)
 
 	req := httptest.NewRequest("GET", "/not-riverui", nil)
-	rw := httptest.NewRecorder()
+	recorder := httptest.NewRecorder()
 
-	handler.ServeHTTP(rw, req)
+	handler.ServeHTTP(recorder, req)
 
 	assert.True(t, nextCalled)
-	assert.Equal(t, http.StatusOK, rw.Code)
-	assert.Equal(t, "next called", rw.Body.String())
+	assert.Equal(t, http.StatusOK, recorder.Result().StatusCode)
+	assert.Equal(t, "next called", recorder.Body.String())
 }
 
 func prep(t *testing.T) (*river.Client[pgx.Tx], *pgxpool.Pool) {
+	t.Helper()
+
 	pgC, err := postgres.Run(t.Context(),
 		"postgres:18-alpine",
 		postgres.BasicWaitStrategies(),
@@ -127,7 +133,9 @@ func prep(t *testing.T) (*river.Client[pgx.Tx], *pgxpool.Pool) {
 	_, err = migrator.Migrate(t.Context(), rivermigrate.DirectionUp, nil)
 	require.NoError(t, err)
 
-	client, err := river.NewClient(riverDriver, &river.Config{})
+	client, err := river.NewClient(riverDriver, &river.Config{
+		Logger: riversharedtest.Logger(t),
+	})
 	require.NoError(t, err)
 
 	return client, pool
