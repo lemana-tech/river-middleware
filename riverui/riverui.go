@@ -18,7 +18,7 @@ type Middleware struct {
 	riveruiHandler http.Handler
 }
 
-// Option contains options for creating River UI middleware
+// Options contains options for creating River UI middleware
 type Options struct {
 	// RiverClient is provided to initialize ui endpoints
 	RiverClient *river.Client[pgx.Tx]
