@@ -30,7 +30,8 @@ type Options struct {
 	// DevMode is whether the server is running in development mode
 	DevMode bool
 
-	// LiveFS is whether to use the live filesystem for the frontend
+	// LiveFS is whether to use the live filesystem for the frontend.
+	// This flag requires RIVER_UI_PROJECT_ROOT environment variable to be set.
 	LiveFS bool
 
 	// Logger is the logger to use logging errors within the handler

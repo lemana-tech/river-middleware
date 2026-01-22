@@ -6,14 +6,9 @@
 
 RiverUI middleware is an HTTP middleware wrapper for the river job queue ui dashboard. It integrates river ui endpoints into your Go HTTP server, allowing you to monitor and manage job queues through a web interface.
 
-### Purpose
+### Motivation
 
-This middleware enables:
-
-- Real-time job queue monitoring and management
-- Seamless integration with existing Go HTTP servers
-- Customizable UI base path
-- Dev and LiveFS modes support
+Middleware allows you to initialize [RiverUI](https://riverqueue.com/docs/river-ui) in an existing router with just a few lines of code. Regardless of where your application's router is initialized — whether in code you control or on the third-party side — you can use middleware for easy RiverUI integration.
 
 ### Basic setup
 
@@ -38,8 +33,6 @@ func main() {
 
     mw, err := riverui.NewMiddleware(context.Background(), riverui.Options{
         RiverClient:    riverClient,
-        DevMode:        false,
-        LiveFS:         false,
         Logger:         slog.Default(),
         BaseURL:        "/riverui",
     })
@@ -55,13 +48,14 @@ func main() {
 
 ### Configuration options
 
-| Option      | Type           | Description                                        |
-| ----------- | -------------- | -------------------------------------------------- |
-| RiverClient | \*river.Client | River job queue client (required)                  |
-| DevMode     | bool           | Enable development mode                            |
-| LiveFS      | bool           | Use live filesystem for frontend assets            |
-| Logger      | \*slog.Logger  | Custom logger instance                             |
-| BaseURL     | string         | Base URL path for reverse proxy (e.g., `/riverui`) |
+| Option      | Type           | Description                                                                                      |
+| ----------- | -------------- | ------------------------------------------------------------------------------------------------ |
+| RiverClient | \*river.Client | River job queue client (required)                                                                |
+| EndpointsTx | \*pgx.Tx       | Optional transaction to wrap all database operations for API endpoints (mainly used for testing) |
+| DevMode     | bool           | Enable development mode                                                                          |
+| LiveFS      | bool           | Use live filesystem for frontend assets                                                          |
+| Logger      | \*slog.Logger  | Custom logger instance                                                                           |
+| BaseURL     | string         | Base URL path for reverse proxy (e.g., `/riverui`)                                               |
 
 ### Access
 
