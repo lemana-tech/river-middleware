@@ -74,7 +74,7 @@ func NewMiddleware(ctx context.Context, opts Options) (*Middleware, error) {
 // RiverUI middleware serves River UI endpoints on matching paths
 func (m *Middleware) RiverUI(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasSuffix(strings.ToLower(r.URL.Path), m.baseURL) {
+		if strings.HasPrefix(strings.ToLower(r.URL.Path), m.baseURL) {
 			m.riveruiHandler.ServeHTTP(w, r)
 			return
 		}
