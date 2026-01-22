@@ -19,13 +19,18 @@ import (
     "net/http"
 
     "github.com/go-pkgz/routegroup"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
     "github.com/lemana-tech/river-middleware/riverui"
 	"github.com/riverqueue/river"
     "github.com/riverqueue/river/riverdriver/riverpgxv5"
 )
 
 func main() {
+    pgPool, err := pgxpool.NewWithConfig(ctx, &pgxpool.Config{...})
+    if err != nil {
+        slog.Error("failed to init pgxpool", "err", err)
+    }
+
     riverClient, err := river.NewClient(riverpgxv5.New(pgPool), nil)
     if err != nil {
         slog.Error("failed to init river client", "err", err)
