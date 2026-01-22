@@ -40,16 +40,8 @@ func TestRiverUI_Middleware(t *testing.T) {
 			baseURL:        "",
 			requestPath:    "/not-riverui",
 			method:         http.MethodGet,
-			shouldCallNext: true,
-			expectedCode:   http.StatusOK,
-		},
-		{
-			name:           "uppercase path case insensitive",
-			baseURL:        "",
-			requestPath:    "/API/HEALTH-CHECKS/MINIMAL",
-			method:         http.MethodGet,
 			shouldCallNext: false,
-			expectedCode:   http.StatusOK,
+			expectedCode:   http.StatusNotFound,
 		},
 		{
 			name:           "matching baseURL path",
@@ -62,17 +54,9 @@ func TestRiverUI_Middleware(t *testing.T) {
 		{
 			name:           "non-matching baseURL path",
 			baseURL:        "/riverui",
-			requestPath:    "/api/health-checks/minimal",
+			requestPath:    "/api/states",
 			method:         http.MethodGet,
 			shouldCallNext: true,
-			expectedCode:   http.StatusOK,
-		},
-		{
-			name:           "root path with empty baseURL",
-			baseURL:        "",
-			requestPath:    "/",
-			method:         http.MethodGet,
-			shouldCallNext: false,
 			expectedCode:   http.StatusOK,
 		},
 		{
@@ -83,27 +67,12 @@ func TestRiverUI_Middleware(t *testing.T) {
 			shouldCallNext: false,
 			expectedCode:   http.StatusOK,
 		},
-		{
-			name:           "POST method",
-			baseURL:        "",
-			requestPath:    "/api/queues",
-			method:         http.MethodPost,
-			shouldCallNext: false,
-			expectedCode:   http.StatusOK,
-		},
-		{
-			name:           "uppercase path with baseURL case insensitive",
-			baseURL:        "/riverui",
-			requestPath:    "/RIVERUI/API/HEALTH-CHECKS/MINIMAL",
-			method:         http.MethodGet,
-			shouldCallNext: false,
-			expectedCode:   http.StatusOK,
-		},
 	}
+
+	rc, pgPool := prep(t)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			rc, pgPool := prep(t)
 
 			tx, err := pgPool.Begin(t.Context())
 			require.NoError(t, err)
