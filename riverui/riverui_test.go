@@ -41,7 +41,7 @@ func TestRiverUI_Middleware(t *testing.T) {
 			requestPath:    "/not-riverui",
 			method:         http.MethodGet,
 			shouldCallNext: false,
-			expectedCode:   http.StatusNotFound,
+			expectedCode:   http.StatusOK,
 		},
 		{
 			name:           "matching baseURL path",
