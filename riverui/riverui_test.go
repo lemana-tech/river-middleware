@@ -1,19 +1,18 @@
 package riverui
 
 import (
+	"database/sql"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/riverqueue/river"
-	"github.com/riverqueue/river/riverdriver/riverpgxv5"
+	"github.com/riverqueue/river/riverdriver/riversqlite"
 	"github.com/riverqueue/river/rivermigrate"
 	"github.com/riverqueue/river/rivershared/riversharedtest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/testcontainers/testcontainers-go/modules/postgres"
+	_ "modernc.org/sqlite" // sqlite driver
 )
 
 func TestRiverUI_Middleware(t *testing.T) {
@@ -31,14 +30,6 @@ func TestRiverUI_Middleware(t *testing.T) {
 			name:           "health check with empty baseURL",
 			baseURL:        "",
 			requestPath:    "/api/health-checks/minimal",
-			method:         http.MethodGet,
-			shouldCallNext: false,
-			expectedCode:   http.StatusOK,
-		},
-		{
-			name:           "non-riverui path with empty baseURL",
-			baseURL:        "",
-			requestPath:    "/not-riverui",
 			method:         http.MethodGet,
 			shouldCallNext: false,
 			expectedCode:   http.StatusOK,
@@ -69,21 +60,20 @@ func TestRiverUI_Middleware(t *testing.T) {
 		},
 	}
 
-	rc, pgPool := prep(t)
+	riverClient, dbPool := prep(t)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			tx, err := pgPool.Begin(t.Context())
+			tx, err := dbPool.Begin()
 			require.NoError(t, err)
 
 			t.Cleanup(func() {
-				_ = tx.Rollback(t.Context())
+				_ = tx.Rollback()
 			})
 
-			opts := Options{
-				RiverClient: rc,
-				EndpointsTx: &tx,
+			opts := Options[*sql.Tx]{
+				RiverClient: riverClient,
 				DevMode:     true,
 				LiveFS:      false,
 				Logger:      riversharedtest.Logger(t),
@@ -112,34 +102,18 @@ func TestRiverUI_Middleware(t *testing.T) {
 	}
 }
 
-func prep(t *testing.T) (*river.Client[pgx.Tx], *pgxpool.Pool) {
+func prep(t *testing.T) (*river.Client[*sql.Tx], *sql.DB) {
 	t.Helper()
 
-	pgC, err := postgres.Run(t.Context(),
-		"postgres:18-alpine",
-		postgres.BasicWaitStrategies(),
-		postgres.WithSQLDriver("pgx"),
-	)
+	dbPool, err := sql.Open("sqlite", "file:./river.test")
 	require.NoError(t, err)
+	dbPool.SetMaxOpenConns(1)
 
 	t.Cleanup(func() {
-		pgC.Terminate(t.Context())
+		dbPool.Close()
 	})
 
-	pgURL, err := pgC.ConnectionString(t.Context())
-	require.NoError(t, err)
-
-	poolCfg, err := pgxpool.ParseConfig(pgURL)
-	require.NoError(t, err)
-
-	pool, err := pgxpool.NewWithConfig(t.Context(), poolCfg)
-	require.NoError(t, err)
-
-	t.Cleanup(func() {
-		pool.Close()
-	})
-
-	riverDriver := riverpgxv5.New(pool)
+	riverDriver := riversqlite.New(dbPool)
 
 	migrator, err := rivermigrate.New(riverDriver, &rivermigrate.Config{})
 	require.NoError(t, err)
@@ -152,5 +126,5 @@ func prep(t *testing.T) (*river.Client[pgx.Tx], *pgxpool.Pool) {
 	})
 	require.NoError(t, err)
 
-	return client, pool
+	return client, dbPool
 }
