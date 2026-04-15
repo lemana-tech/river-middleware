@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/riverqueue/river"
 	"riverqueue.com/riverui"
 )
@@ -19,13 +18,13 @@ type Middleware struct {
 }
 
 // Options contains options for creating River UI middleware
-type Options struct {
+type Options[TTx any] struct {
 	// RiverClient is provided to initialize ui endpoints
-	RiverClient *river.Client[pgx.Tx]
+	RiverClient *river.Client[TTx]
 
 	// EndpointsTx is an optional transaction to wrap all database operations for api endpoints.
 	// It's mainly used for testing.
-	EndpointsTx *pgx.Tx
+	EndpointsTx *TTx
 
 	// DevMode is whether the server is running in development mode
 	DevMode bool
@@ -42,7 +41,7 @@ type Options struct {
 }
 
 // NewMiddleware makes River UI middleware with given options
-func NewMiddleware(ctx context.Context, opts Options) (*Middleware, error) {
+func NewMiddleware[TTx any](ctx context.Context, opts Options[TTx]) (*Middleware, error) {
 	if opts.Logger == nil {
 		opts.Logger = slog.Default()
 	}
@@ -51,7 +50,7 @@ func NewMiddleware(ctx context.Context, opts Options) (*Middleware, error) {
 
 	handler, err := riverui.NewHandler(&riverui.HandlerOpts{
 		DevMode: opts.DevMode,
-		Endpoints: riverui.NewEndpoints(opts.RiverClient, &riverui.EndpointsOpts[pgx.Tx]{
+		Endpoints: riverui.NewEndpoints(opts.RiverClient, &riverui.EndpointsOpts[TTx]{
 			Tx: opts.EndpointsTx,
 		}),
 		LiveFS: opts.LiveFS,
