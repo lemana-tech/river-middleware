@@ -14,15 +14,16 @@ Middleware allows you to initialize [RiverUI](https://riverqueue.com/docs/river-
 
 ```go
 import (
-	"context"
-	"log/slog"
-    "net/http"
-
-    "github.com/go-pkgz/routegroup"
-	"github.com/jackc/pgx/v5/pgxpool"
-    "github.com/lemana-tech/river-middleware/riverui"
-	"github.com/riverqueue/river"
-    "github.com/riverqueue/river/riverdriver/riverpgxv5"
+		"context"
+		"log/slog"
+		"net/http"
+	
+		"github.com/go-pkgz/routegroup"
+		"github.com/jackc/pgx/v5"
+		"github.com/jackc/pgx/v5/pgxpool"
+		"github.com/lemana-tech/river-middleware/riverui"
+		"github.com/riverqueue/river"
+		"github.com/riverqueue/river/riverdriver/riverpgxv5"
 )
 
 func main() {
@@ -36,7 +37,7 @@ func main() {
         slog.Error("failed to init river client", "err", err)
     }
 
-    mw, err := riverui.NewMiddleware(context.Background(), riverui.Options{
+    mw, err := riverui.NewMiddleware(context.Background(), riverui.Options[pgx.Tx]{
         RiverClient:    riverClient,
         Logger:         slog.Default(),
         BaseURL:        "/riverui",
@@ -53,14 +54,16 @@ func main() {
 
 ### Configuration options
 
-| Option      | Type           | Description                                                                                      |
-| ----------- | -------------- | ------------------------------------------------------------------------------------------------ |
-| RiverClient | \*river.Client | River job queue client (required)                                                                |
-| EndpointsTx | \*pgx.Tx       | Optional transaction to wrap all database operations for API endpoints (mainly used for testing) |
-| DevMode     | bool           | Enable development mode                                                                          |
-| LiveFS      | bool           | Use live filesystem for frontend assets                                                          |
-| Logger      | \*slog.Logger  | Custom logger instance                                                                           |
-| BaseURL     | string         | Base URL path for reverse proxy (e.g., `/riverui`)                                               |
+| Option      | Type                | Description                                                                                      |
+| ----------- | ------------------- | ------------------------------------------------------------------------------------------------ |
+| RiverClient | \*river.Client[TTx] | River job queue client (required)                                                                |
+| EndpointsTx | \*TTx               | Optional transaction to wrap all database operations for API endpoints (mainly used for testing) |
+| DevMode     | bool                | Enable development mode                                                                          |
+| LiveFS      | bool                | Use live filesystem for frontend assets                                                          |
+| Logger      | \*slog.Logger       | Custom logger instance                                                                           |
+| BaseURL     | string              | Base URL path for reverse proxy (e.g., `/riverui`)                                               |
+
+`Options` and `NewMiddleware` are generic over `TTx` — the transaction type of your River driver (e.g., `pgx.Tx` for `riverpgxv5`, `*sql.Tx` for `riversqlite`).
 
 ### Access
 
