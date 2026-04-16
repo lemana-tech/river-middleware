@@ -14,16 +14,16 @@ Middleware allows you to initialize [RiverUI](https://riverqueue.com/docs/river-
 
 ```go
 import (
-		"context"
-		"log/slog"
-		"net/http"
-	
-		"github.com/go-pkgz/routegroup"
-		"github.com/jackc/pgx/v5"
-		"github.com/jackc/pgx/v5/pgxpool"
-		"github.com/lemana-tech/river-middleware/riverui"
-		"github.com/riverqueue/river"
-		"github.com/riverqueue/river/riverdriver/riverpgxv5"
+	"context"
+	"log/slog"
+	"net/http"
+
+	"github.com/go-pkgz/routegroup"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/lemana-tech/river-middleware/riverui"
+	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/riverdriver/riverpgxv5"
 )
 
 func main() {
