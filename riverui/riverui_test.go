@@ -105,7 +105,7 @@ func TestRiverUI_Middleware(t *testing.T) {
 func prep(t *testing.T) (*river.Client[*sql.Tx], *sql.DB) {
 	t.Helper()
 
-	dbPool, err := sql.Open("sqlite", "file:./river.test")
+	dbPool, err := sql.Open("sqlite", ":memory:")
 	require.NoError(t, err)
 	dbPool.SetMaxOpenConns(1)
 
